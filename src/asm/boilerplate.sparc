@@ -1,0 +1,63 @@
+    .section    ".rodata"
+    .align      4
+.$$.intFmt:
+    .asciz      "%d"
+.$$.strFmt:
+    .asciz      "%s"
+.$$.strTF:
+    .asciz      "false\0\0\0true"
+.$$.strEndl:
+    .asciz      "\n"
+.$$.strArrBound:
+    .asciz      "Index value of %d is outside legal range [0,%d).\n"
+.$$.strNullPtr:
+    .asciz      "Attempt to dereference NULL pointer.\n"
+    
+    .section    ".text"
+    .align      4
+.$$.printBool:
+    save        %sp, -96, %sp
+    set         .$$.strTF, %o0
+    cmp         %g0, %i0
+    be          .$$.printBool2
+    nop     
+    add         %o0, 8, %o0
+.$$.printBool2:
+    call        printf
+    nop     
+    ret     
+    restore 
+    
+.$$.arrCheck:
+    save        %sp, -96, %sp
+    cmp         %i0, %g0
+    bl          .$$.arrCheck2
+    nop     
+    cmp         %i0, %i1
+    bge         .$$.arrCheck2
+    nop     
+    ret     
+    restore 
+.$$.arrCheck2:
+    set         .$$.strArrBound, %o0
+    mov         %i0, %o1
+    call        printf
+    mov         %i1, %o2
+    call        exit
+    mov         1, %o0
+    ret     
+    restore 
+    
+.$$.ptrCheck:
+    save        %sp, -96, %sp
+    cmp         %i0, %g0
+    bne         .$$.ptrCheck2
+    nop     
+    set         .$$.strNullPtr, %o0
+    call        printf
+    nop     
+    call        exit
+    mov         1, %o0
+.$$.ptrCheck2:
+    ret     
+    restore 

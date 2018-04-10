@@ -1,0 +1,110 @@
+Sections:
+  Parser builder overview
+  Running the parser builder
+  Grammar files
+     Declaration Section
+     Production Section
+
+
+Parser builder overview
+-----------------------
+For the parser, it is not practical to code your own as you may a lexer.  
+The scope of coding the parser is simply too complex for the short time 
+frame we have allowed in 131.  Instead we will be using a tool called 
+CUP to build the parser for us.
+
+The way CUP works is that it is given the grammar rules for the language 
+and then CUP outputs java code which can match the input tokens to the grammar
+rules specified.  The grammar rules are grouped together in a file to give 
+to CUP and it will output the java files containing the parsing code.
+
+   input grammar file:     rc.cup
+   output files:
+     parsing code          parser.java
+     token codes defines   sym.java   
+
+
+Running the parser builder
+--------------------------
+To be able to run the Makefile in the starter code or run cup
+   prep cs131X
+   (replace 'X' above with 'f' for Fall, 'w' for Winter, or 's' for Spring)
+
+then
+   make
+
+To run cup separately
+   javacup < rc.cup
+
+When you run CUP, it will tell you then & there whether or not the grammar 
+is ambiguous.  If it is, CUP will quit and not output any output files.
+
+If CUP does find ambiguities - it will output something like this:
+
+*** Shift/Reduce conflict found in state #31
+  between QualIdent ::= T_ID (*)
+  and     QualIdent ::= T_ID (*) T_DOT T_ID
+  under symbol T_DOT
+  Resolved in favor of shifting.
+
+which lets you know the ambiguity is in the QualIdent rule.
+
+
+Grammar Files
+-------------
+The input grammar file to give to CUP was developed as a reduced subset of
+the C programming language by Garo Bournoutian in 2008. 
+
+In the grammar file there are two basic sections.  The declaration section
+and the production section.
+
+
+Declaration section:
+--------------------
+  This section is always at the beginning of the input grammar file.  
+This section sets up the terminals and non-terminals for the grammar.
+
+example:
+   terminal T_RPAREN       (1)
+   terminal T_AMPERSAND        
+
+   terminal String T_ID    (2)
+
+   non-terminal Module     (3)
+
+
+(1) - The input grammar file must define the input tokens it accepts.  
+Those are the terminals and are read in by the lexer.  The tokens are defined
+in the sym.java file.
+
+(2) - Next, the input grammar file must define the lexemes for the tokens.
+So in the case of a T_ID token, CUP needs to know what type lexeme it is :  
+String, Integer, Float, etc.  
+
+(3) - Finally, the input grammar file has a list of the specific production
+rules which will follow.
+
+
+Production section:
+-------------------
+This section has the actual production rules for the grammar.
+
+Example 
+
+   VarDecl ::= Type IdentList T_SEMI
+
+What you will be doing is adding your own java code to be executed when
+the rule is reduced.  For instance, in the above, the starter code will
+loop through the IdentList (which is a list of ids) to see if any of the
+ids is a redeclared variable.  If so, the appropriate error is produced.
+This is done by adding code between the symbols {: and :}.  For example
+
+   VarDecl ::= Type IdentList T_SEMI
+      {:
+        ... your java code
+      :}
+
+There are many examples of this in the code provided. These action codes
+can be placed in between the tokens if you want an action to occur at
+a specific point in the parse.
+
